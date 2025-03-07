@@ -50,29 +50,29 @@ do
 	esac
 done
 
-if [ -z "$WORKSPACE" ]; then
+if [ -z "$WORKINGSPACE" ]; then
         cwdir=$(pwd)
         cmdpath=$(dirname $0)
         if [ "$cmdpath" == "." ]; then
                 if [ -d ocs-upi-kvm ]; then
-                        export WORKSPACE=$cwdir
+                        export WORKINGSPACE=$cwdir
                 else
-                        export WORKSPACE=$cwdir/../..
+                        export WORKINGSPACE=$cwdir/../..
                 fi
         elif [[ "$cmdpath" =~ "ocs-upi-kvm/samples" ]]; then
-                export WORKSPACE=$cwdir/$cmdpath/../..
+                export WORKINGSPACE=$cwdir/$cmdpath/../..
         elif [[ "$cmdpath" =~ "samples" ]]; then
-                export WORKSPACE=$cwdir/..
+                export WORKINGSPACE=$cwdir/..
         elif [ -d ocs-upi-kvm ]; then
-                export WORKSPACE=$cwdir
+                export WORKINGSPACE=$cwdir
         else
                 echo "Could not find ocs-upi-kvm directory"
                 exit 1
         fi
 fi
 
-if [ -e $WORKSPACE/env-ocp.sh ]; then
-	source $WORKSPACE/env-ocp.sh
+if [ -e $WORKINGSPACE/env-ocp.sh ]; then
+	source $WORKINGSPACE/env-ocp.sh
 fi
 
 ceph_tools=$( oc -n openshift-storage get pods | grep rook-ceph-tools | awk '{print $1}' )
@@ -125,8 +125,8 @@ function create_pods () {
 			export PVC_NAME=fio-w${i}-pvc${j}
 			export POD_NAME=fio-w${i}-p${j}
 
-			cat $WORKSPACE/ocs-upi-kvm/files/perf-fio/fiopod.yaml.in | envsubst > $WORKSPACE/fiopod.yaml
-			oc create -f $WORKSPACE/fiopod.yaml
+			cat $WORKINGSPACE/ocs-upi-kvm/files/perf-fio/fiopod.yaml.in | envsubst > $WORKINGSPACE/fiopod.yaml
+			oc create -f $WORKINGSPACE/fiopod.yaml
 
 			pvcs+=( $PVC_NAME )
 			pods+=( $POD_NAME )
@@ -138,8 +138,8 @@ function create_pods () {
 }
 
 function install_fio_in_pods () {
-	cat $WORKSPACE/ocs-upi-kvm/files/perf-fio/run_fio_pod.sh.in | envsubst > $WORKSPACE/run_fio_pod.sh
-	chmod a+x $WORKSPACE/run_fio_pod.sh
+	cat $WORKINGSPACE/ocs-upi-kvm/files/perf-fio/run_fio_pod.sh.in | envsubst > $WORKINGSPACE/run_fio_pod.sh
+	chmod a+x $WORKINGSPACE/run_fio_pod.sh
 
 	echo "Preparing fio pods ..."
 	npods=${#pods[@]}
@@ -153,7 +153,7 @@ function install_fio_in_pods () {
 		if [ "$dev_mode" == false ]; then
 			oc rsh $pod_name /usr/bin/apt-get update > /dev/null 2>&1
 			oc rsh $pod_name /usr/bin/apt-get -y install fio procps > /dev/null 2>&1
-			oc cp $WORKSPACE/run_fio_pod.sh $pod_name:run_fio_pod.sh
+			oc cp $WORKINGSPACE/run_fio_pod.sh $pod_name:run_fio_pod.sh
 		fi
 
 		(( i = i + 1 ))
@@ -303,7 +303,7 @@ export FSIZE=${fsize}G
 echo "Size of fio file: $FSIZE"
 
 log_date=$(date "+%d%H%M")
-fio_results_dir=$WORKSPACE/fio-results/$io_type/$log_date
+fio_results_dir=$WORKINGSPACE/fio-results/$io_type/$log_date
 rm -rf $fio_results_dir
 mkdir -p $fio_results_dir
 
