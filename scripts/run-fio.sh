@@ -259,7 +259,7 @@ worker_node_mem=$(oc debug node/$ceph_node -- chroot /host lsmem 2>/dev/null | g
 
 # Determine the number of pods and the amount of storage in each pod's pvc
 
-min_pvc_allocated_per_worker=$(( worker_node_mem * 80 / 100 ))
+min_pvc_allocated_per_worker=$(( worker_node_mem * 60 / 100 ))
 if (( use_GiB_per_worker < min_pvc_allocated_per_worker )); then
 	echo "ERROR: Available storage in ceph blockpool is insufficient to run FIO test.  Increase the size of worker node data disks!"
 	echo "       use_GiB_per_worker=$use_GiB_per_worker must be >= min_pvc_allocated_per_worker=$min_pvc_allocated_per_worker"
